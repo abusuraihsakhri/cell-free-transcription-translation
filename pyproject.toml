@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cell-free-transcription-translation"
+version = "2.0.0"
+description = "TX-TL Engine: Cell-Free Protein Synthesis & Kinetic ODE Simulator"
+readme = "README.md"
+authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Security/Cryptography",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+cell-free-transcription-translation = "txtl_simulator.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/abusuraihsakhri/cell-free-transcription-translation"
+Repository = "https://github.com/abusuraihsakhri/cell-free-transcription-translation.git"
