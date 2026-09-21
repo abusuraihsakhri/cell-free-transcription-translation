@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Browser-based deterministic cell-free transcription-translation kinetic simulator.">
+  <title>TXTL Kinetic Simulator</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>TXTL Kinetic Simulator</h1>
+        <p>Reduced cell-free transcription–translation model</p>
+      </div>
+      <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle dark mode" title="Toggle theme">
+        <span aria-hidden="true">◐</span>
+      </button>
+    </header>
+
+    <main class="workspace">
+      <section class="card controls-card" aria-labelledby="inputsTitle">
+        <div class="card-heading">
+          <div>
+            <h2 id="inputsTitle">Model inputs</h2>
+            <p class="hint">Concentrations use nM for DNA/ribosomes and mM for substrate pools.</p>
+          </div>
+          <button id="resetButton" class="text-button" type="button">Reset</button>
+        </div>
+
+        <form id="modelForm" novalidate>
+          <div class="control-grid">
+            <label>
+              <span>DNA template <small>nM</small></span>
+              <input id="dna_nm" name="dna_nm" type="number" min="0.001" step="0.1" value="5" required>
+            </label>
+            <label>
+              <span>NTP pool <small>mM</small></span>
+              <input id="ntp_mm" name="ntp_mm" type="number" min="0.001" step="0.1" value="1.5" required>
+            </label>
+            <label>
+              <span>Amino acids <small>mM</small></span>
+              <input id="aa_mm" name="aa_mm" type="number" min="0.001" step="0.1" value="2" required>
+            </label>
+            <label>
+              <span>Ribosomes <small>nM</small></span>
+              <input id="ribosome_nm" name="ribosome_nm" type="number" min="0.001" step="1" value="50" required>
+            </label>
+            <label>
+              <span>Duration <small>min</small></span>
+              <input id="duration_min" name="duration_min" type="number" min="0.1" step="1" value="120" required>
+            </label>
+            <label>
+              <span>Protein length <small>aa</small></span>
+              <input id="protein_length_aa" name="protein_length_aa" type="number" min="1" step="1" value="240" required>
+            </label>
+          </div>
+
+          <details class="advanced">
+            <summary>Advanced kinetic parameters</summary>
+            <div class="advanced-grid">
+              <label><span>Vmax TX <small>nM/min</small></span><input id="vmax_tx_nm_min" type="number" min="0.001" step="1" value="100"></label>
+              <label><span>Promoter Kd <small>nM</small></span><input id="promoter_kd_nm" type="number" min="0.001" step="0.1" value="1"></label>
+              <label><span>NTP Km <small>mM</small></span><input id="ntp_km_mm" type="number" min="0.001" step="0.01" value="0.1"></label>
+              <label><span>mRNA Km <small>nM</small></span><input id="mrna_km_nm" type="number" min="0.001" step="1" value="20"></label>
+              <label><span>AA Km <small>mM</small></span><input id="aa_km_mm" type="number" min="0.001" step="0.01" value="0.2"></label>
+              <label><span>Elongation <small>aa/s</small></span><input id="elongation_aa_s" type="number" min="0.001" step="0.5" value="10"></label>
+              <label><span>mRNA half-life <small>min</small></span><input id="mrna_half_life_min" type="number" min="0.001" step="0.5" value="8"></label>
+              <label><span>Protein half-life <small>min</small></span><input id="protein_half_life_min" type="number" min="0.001" step="1" value="240"></label>
+              <label><span>Transcript length <small>nt</small></span><input id="nt_per_transcript" type="number" min="1" step="1" value="720"></label>
+              <label><span>Integration step <small>min</small></span><input id="dt_min" type="number" min="0.001" step="0.05" value="0.1"></label>
+            </div>
+          </details>
+
+          <div class="actions">
+            <button id="runButton" class="primary-button" type="submit">Analyze</button>
+            <button id="downloadButton" class="secondary-button" type="button" disabled>Download CSV</button>
+          </div>
+          <p id="errorMessage" class="error-message" role="alert" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card results-card" aria-labelledby="resultsTitle">
+        <div class="card-heading">
+          <div>
+            <h2 id="resultsTitle">Simulation output</h2>
+            <p class="hint">RK4 integration of coupled mRNA/protein dynamics with substrate depletion.</p>
+          </div>
+          <span id="limitBadge" class="status-badge">Ready</span>
+        </div>
+
+        <div class="metric-grid" aria-live="polite">
+          <article class="metric"><span>Final protein</span><strong id="finalProtein">—</strong><small>nM</small></article>
+          <article class="metric"><span>Peak mRNA</span><strong id="peakMrna">—</strong><small>nM</small></article>
+          <article class="metric"><span>NTP remaining</span><strong id="ntpRemaining">—</strong><small>mM</small></article>
+          <article class="metric"><span>AA remaining</span><strong id="aaRemaining">—</strong><small>mM</small></article>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-legend">
+            <span><i class="legend-line protein-line"></i>Protein</span>
+            <span><i class="legend-line mrna-line"></i>mRNA</span>
+            <small>normalized to each series maximum</small>
+          </div>
+          <canvas id="plot" role="img" aria-label="Normalized mRNA and protein concentration over time"></canvas>
+        </div>
+
+        <div class="model-note">
+          <strong>Interpretation:</strong>
+          <span id="interpretation">Run an analysis to inspect predicted substrate use and expression dynamics.</span>
+        </div>
+        <p class="disclaimer">Exploratory model only. Quantitative use requires calibration to the specific extract, construct, reaction chemistry, and measurement system.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

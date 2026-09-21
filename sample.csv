@@ -1,4 +1,4 @@
-task_id,target_identifier,primary_metric,secondary_metric,is_critical_flag,status_descriptor
-TASK-001,TARGET-01,28.4,14.2,True,DISCORDANT
-TASK-002,TARGET-02,12.0,4.1,False,NOMINAL
-TASK-003,TARGET-03,35.0,19.5,True,ANOMALY
+dna_nm,ntp_mm,aa_mm,ribosome_nm,duration_min,dt_min,protein_length_aa
+2,1.5,2.0,50,60,0.1,240
+5,1.5,2.0,50,60,0.1,240
+10,1.5,2.0,50,60,0.1,240
