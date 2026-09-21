@@ -13,7 +13,7 @@ class ExecutionStatus(str, Enum):
 
 
 @dataclass
-class FrontierPayload:
+class ScreeningPayload:
     """Legacy generic payload retained for backward-compatible audit commands."""
 
     task_id: str
