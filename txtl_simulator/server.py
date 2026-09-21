@@ -1,7 +1,5 @@
 """Optional FastAPI server for local TXTL simulation."""
 
-from __future__ import annotations
-
 from typing import Any, Dict, Optional
 
 from .agents import TXTLSimulatorCoordinator
