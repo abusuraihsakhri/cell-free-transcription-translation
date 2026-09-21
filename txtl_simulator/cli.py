@@ -12,7 +12,7 @@ from typing import Iterable
 
 from .agents import TXTLSimulatorCoordinator
 from .engine import TXTLKineticModel, downsample_points
-from .models import FrontierPayload, KineticParameters
+from .models import ScreeningPayload, KineticParameters
 
 
 coordinator = TXTLSimulatorCoordinator()
@@ -179,7 +179,7 @@ def main(argv=None):
         return 0
 
     if args.command == "audit":
-        payload = FrontierPayload(
+        payload = ScreeningPayload(
             task_id=args.task_id,
             target_identifier=args.target,
             primary_metric=args.primary,
@@ -233,7 +233,7 @@ def main(argv=None):
                 name for name in legacy_fields if name not in fieldnames
             ]
             for row in rows:
-                payload = FrontierPayload(
+                payload = ScreeningPayload(
                     task_id=row.get("task_id", "TASK-01"),
                     target_identifier=row.get("target_identifier", "TARGET-01"),
                     primary_metric=float(row.get("primary_metric") or 15.0),
