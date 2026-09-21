@@ -32,6 +32,12 @@ jobs:
       - name: Compile Python sources
         run: python -m compileall -q txtl_simulator cli.py txtl_simulator_app.py
 
+      - name: Validate static browser app
+        run: |
+          node --check web/app.js
+          grep -q 'id="runButton"' web/index.html
+          grep -q '>Analyze<' web/index.html
+
       - name: Run tests
         run: pytest -v
 
