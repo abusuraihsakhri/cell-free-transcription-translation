@@ -6,7 +6,7 @@ import pytest
 from txtl_simulator.agents import TXTLSimulatorCoordinator
 from txtl_simulator.cli import main, parse_bool
 from txtl_simulator.engine import TXTLKineticModel, downsample_points
-from txtl_simulator.models import FrontierPayload, KineticParameters
+from txtl_simulator.models import ScreeningPayload, KineticParameters
 
 
 def test_default_simulation_is_finite_and_nonnegative():
@@ -73,7 +73,7 @@ def test_parse_bool(raw, expected):
 
 def test_legacy_screening_still_runs():
     coordinator = TXTLSimulatorCoordinator()
-    payload = FrontierPayload(
+    payload = ScreeningPayload(
         task_id="T1",
         target_identifier="TARGET-1",
         primary_metric=35.0,
