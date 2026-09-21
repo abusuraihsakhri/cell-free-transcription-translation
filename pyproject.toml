@@ -25,6 +25,7 @@ server = [
 ]
 dev = [
     "pytest>=8,<10",
+    "pip-audit>=2.7,<3",
 ]
 
 [project.scripts]
