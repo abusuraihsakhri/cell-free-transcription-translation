@@ -1,57 +1,85 @@
-"""
-FastAPI REST API Server for TX-TL Engine: Cell-Free Protein Synthesis & Kinetic ODE Simulator.
-"""
-from typing import Dict, Any
-from .models import FrontierPayload
+"""Optional FastAPI server for local TXTL simulation."""
+
+from __future__ import annotations
+
+from typing import Any, Dict, Optional
+
 from .agents import TXTLSimulatorCoordinator
+from .engine import TXTLKineticModel, downsample_points
+from .models import FrontierPayload, KineticParameters
+
 
 coordinator = TXTLSimulatorCoordinator()
 
 
-def create_app():
+def create_app() -> Optional[Any]:
     try:
-        from fastapi import FastAPI
-        from pydantic import BaseModel
-
-        app = FastAPI(
-            title="TX-TL Engine: Cell-Free Protein Synthesis & Kinetic ODE Simulator",
-            description="Solves systems of ODEs for coupled cell-free transcription-translation, ribosome elongation rates, and NTP depletion.",
-            version="2.0.0-FRONTIER",
-        )
-
-        class TaskRequest(BaseModel):
-            task_id: str = "TASK-2026-001"
-            target_identifier: str = "TARGET-BIO-KEY"
-            primary_metric: float = 28.5
-            secondary_metric: float = 14.2
-            status_descriptor: str = "DISCORDANT_ANOMALY"
-            is_critical_flag: bool = True
-            attributes: Dict[str, Any] = {}
-
-        class ChatRequest(BaseModel):
-            query: str
-
-        @app.get("/health")
-        def health():
-            return {"status": "HEALTHY", "system": "cell-free-transcription-translation", "domain": "Synthetic Biology", "version": "2.0.0-FRONTIER"}
-
-        @app.post("/api/audit")
-        def api_audit(req: TaskRequest):
-            payload = FrontierPayload(
-                task_id=req.task_id,
-                target_identifier=req.target_identifier,
-                primary_metric=req.primary_metric,
-                secondary_metric=req.secondary_metric,
-                status_descriptor=req.status_descriptor,
-                is_critical_flag=req.is_critical_flag,
-                attributes=req.attributes,
-            )
-            return coordinator.process(payload)
-
-        @app.post("/api/chat")
-        def api_chat(req: ChatRequest):
-            return {"response": coordinator.query_supervisory_chat(req.query)}
-
-        return app
+        from fastapi import FastAPI, HTTPException
+        from pydantic import BaseModel, Field
     except ImportError:
         return None
+
+    app = FastAPI(
+        title="Cell-Free Transcription-Translation Simulator",
+        description=(
+            "Reduced deterministic TXTL kinetic model for exploratory and "
+            "educational parameter studies."
+        ),
+        version="3.0.0",
+    )
+
+    class SimulationRequest(BaseModel):
+        dna_nm: float = Field(default=5.0, gt=0)
+        ntp_mm: float = Field(default=1.5, gt=0)
+        aa_mm: float = Field(default=2.0, gt=0)
+        ribosome_nm: float = Field(default=50.0, gt=0)
+        duration_min: float = Field(default=120.0, gt=0)
+        dt_min: float = Field(default=0.1, gt=0)
+        vmax_tx_nm_min: float = Field(default=100.0, gt=0)
+        promoter_kd_nm: float = Field(default=1.0, gt=0)
+        ntp_km_mm: float = Field(default=0.1, gt=0)
+        mrna_km_nm: float = Field(default=20.0, gt=0)
+        aa_km_mm: float = Field(default=0.2, gt=0)
+        elongation_aa_s: float = Field(default=10.0, gt=0)
+        protein_length_aa: float = Field(default=240.0, gt=0)
+        mrna_half_life_min: float = Field(default=8.0, gt=0)
+        protein_half_life_min: float = Field(default=240.0, gt=0)
+        nt_per_transcript: float = Field(default=720.0, gt=0)
+
+    class LegacyAuditRequest(BaseModel):
+        task_id: str = "TASK-001"
+        target_identifier: str = "TARGET-01"
+        primary_metric: float = 20.0
+        secondary_metric: float = 5.0
+        status_descriptor: str = "NOMINAL"
+        is_critical_flag: bool = False
+        attributes: Dict[str, Any] = Field(default_factory=dict)
+
+    @app.get("/health")
+    def health():
+        return {
+            "status": "healthy",
+            "service": "cell-free-transcription-translation",
+            "version": "3.0.0",
+        }
+
+    @app.post("/api/simulate")
+    def simulate(req: SimulationRequest):
+        try:
+            params = KineticParameters(**req.model_dump())
+            result = TXTLKineticModel.simulate(params)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        payload = result.to_dict(include_points=False)
+        payload["points"] = [
+            point.to_dict() for point in downsample_points(result.points, max_points=500)
+        ]
+        return payload
+
+    @app.post("/api/audit")
+    def audit(req: LegacyAuditRequest):
+        payload = FrontierPayload(**req.model_dump())
+        return coordinator.process(payload)
+
+    return app
