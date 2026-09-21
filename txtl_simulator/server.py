@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 
 from .agents import TXTLSimulatorCoordinator
 from .engine import TXTLKineticModel, downsample_points
-from .models import FrontierPayload, KineticParameters
+from .models import ScreeningPayload, KineticParameters
 
 
 coordinator = TXTLSimulatorCoordinator()
@@ -77,7 +77,7 @@ def create_app() -> Optional[Any]:
 
     @app.post("/api/audit")
     def audit(req: LegacyAuditRequest):
-        payload = FrontierPayload(**req.model_dump())
+        payload = ScreeningPayload(**req.model_dump())
         return coordinator.process(payload)
 
     return app
