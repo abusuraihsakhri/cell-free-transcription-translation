@@ -3,15 +3,15 @@
 import uuid
 from typing import Any, Dict, List
 
-from .engine import FrontierDomainEngine
-from .models import AgentTelemetryAlert, ExecutionStatus, FrontierPayload
+from .engine import ScreeningRuleEngine
+from .models import AgentTelemetryAlert, ExecutionStatus, ScreeningPayload
 
 
 class TranscriptionKineticsAgent:
     """Apply the configured primary-value screening rule."""
 
-    def audit(self, payload: FrontierPayload) -> List[AgentTelemetryAlert]:
-        result = FrontierDomainEngine.evaluate_primary_parameter(payload.primary_metric)
+    def audit(self, payload: ScreeningPayload) -> List[AgentTelemetryAlert]:
+        result = ScreeningRuleEngine.evaluate_primary_parameter(payload.primary_metric)
         if not result:
             return []
         return [
@@ -29,8 +29,8 @@ class TranscriptionKineticsAgent:
 class RibosomeElongationModelAgent:
     """Apply the configured secondary-value screening rule."""
 
-    def audit(self, payload: FrontierPayload) -> List[AgentTelemetryAlert]:
-        result = FrontierDomainEngine.evaluate_secondary_kinetics(
+    def audit(self, payload: ScreeningPayload) -> List[AgentTelemetryAlert]:
+        result = ScreeningRuleEngine.evaluate_secondary_kinetics(
             payload.secondary_metric, payload.is_critical_flag
         )
         if not result:
@@ -54,8 +54,8 @@ class RibosomeElongationModelAgent:
 class ResourceDepletionTrackerAgent:
     """Flag configured descriptor keywords for manual review."""
 
-    def audit(self, payload: FrontierPayload) -> List[AgentTelemetryAlert]:
-        result = FrontierDomainEngine.audit_specification_conformance(
+    def audit(self, payload: ScreeningPayload) -> List[AgentTelemetryAlert]:
+        result = ScreeningRuleEngine.audit_specification_conformance(
             payload.status_descriptor, payload.attributes
         )
         if not result:
@@ -85,7 +85,7 @@ class TXTLSimulatorCoordinator:
         self.sub_3 = ResourceDepletionTrackerAgent()
         self.execution_ledger: Dict[str, Dict[str, Any]] = {}
 
-    def process(self, payload: FrontierPayload) -> Dict[str, Any]:
+    def process(self, payload: ScreeningPayload) -> Dict[str, Any]:
         all_alerts: List[AgentTelemetryAlert] = []
         all_alerts.extend(self.sub_1.audit(payload))
         all_alerts.extend(self.sub_2.audit(payload))
