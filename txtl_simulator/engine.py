@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, Optional, Tuple
 from .models import KineticParameters, SimulationPoint, SimulationResult
 
 
-class FrontierDomainEngine:
+class ScreeningRuleEngine:
     """Legacy screening helper retained for CLI compatibility.
 
     The bounds are configurable repository defaults, not biological reference
