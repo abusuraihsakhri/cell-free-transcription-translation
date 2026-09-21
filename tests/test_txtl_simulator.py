@@ -121,3 +121,14 @@ def test_cli_kinetic_batch(tmp_path: Path):
     with output_path.open(encoding="utf-8", newline="") as handle:
         row = next(csv.DictReader(handle))
     assert float(row["final_protein_nm"]) > 0
+
+
+def test_optional_server_builds_expected_routes():
+    from txtl_simulator.server import create_app
+
+    app = create_app()
+    assert app is not None
+    paths = {route.path for route in app.routes}
+    assert "/health" in paths
+    assert "/api/simulate" in paths
+    assert "/api/audit" in paths
