@@ -29,6 +29,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,server]"
 
+      - name: Audit installed dependencies
+        run: pip-audit
+
       - name: Compile Python sources
         run: python -m compileall -q txtl_simulator cli.py txtl_simulator_app.py
 
